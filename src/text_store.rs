@@ -1,7 +1,7 @@
 use std::sync::{atomic::{AtomicI32, Ordering}, Mutex, RwLock};
 
-use windows::{Win32::{Foundation::{HWND, POINT, RECT, E_INVALIDARG, E_NOINTERFACE, E_NOTIMPL, E_UNEXPECTED, S_OK, BOOL}, System::{Com::{IDataObject, FORMATETC}, Ole::CONNECT_E_ADVISELIMIT}, UI::TextServices::{ITextStoreACP, ITextStoreACPSink, ITextStoreACP_Impl, TEXT_STORE_LOCK_FLAGS, TEXT_STORE_TEXT_CHANGE_FLAGS, TS_AS_TEXT_CHANGE, TS_ATTRVAL, TS_E_NOLOCK, TS_E_SYNCHRONOUS, TS_LF_READ, TS_LF_READWRITE, TS_LF_SYNC, TS_RT_PLAIN, TS_SD_LOADING, TS_SD_READONLY, TS_SELECTION_ACP, TS_SS_REGIONS, TS_STATUS, TS_ST_NONE, TS_TEXTCHANGE}}};
-use windows_core::{IUnknown, IUnknownImpl, Interface, HRESULT};
+use windows::{Win32::{Foundation::{HWND, POINT, RECT, E_INVALIDARG, E_NOINTERFACE, E_NOTIMPL, E_UNEXPECTED, S_OK, BOOL}, System::{Com::{IDataObject, FORMATETC}, Ole::CONNECT_E_ADVISELIMIT}, UI::TextServices::{ITextStoreACP, ITextStoreACPSink, ITextStoreACP_Impl, TEXT_STORE_LOCK_FLAGS, TS_AS_TEXT_CHANGE, TS_ATTRVAL, TS_E_NOLOCK, TS_E_SYNCHRONOUS, TS_LF_READ, TS_LF_READWRITE, TS_LF_SYNC, TS_RT_PLAIN, TS_SD_LOADING, TS_SD_READONLY, TS_SELECTION_ACP, TS_SS_REGIONS, TS_STATUS, TS_ST_NONE, TS_TEXTCHANGE}}};
+use windows_core::{implement, IUnknown, IUnknownImpl, Interface, HRESULT};
 
 fn flag_check(value: u32, flag: u32) -> bool {
     (value & flag) == flag
@@ -31,6 +31,7 @@ impl From<u32> for LockType {
     }
 }
 
+#[implement(ITextStoreACP)]
 pub struct TfTextStore {
     ref_count: AtomicI32,
     advice_sink: Mutex<AdviceSink>,
@@ -97,6 +98,12 @@ impl TfTextStore {
             true
         } else {
             false
+        }
+    }
+
+    pub fn cast_iunknown(&self) -> windows_core::Result<IUnknown> {
+        unsafe {
+            self.cast()
         }
     }
 }
